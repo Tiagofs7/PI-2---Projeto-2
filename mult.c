@@ -6,8 +6,7 @@ int RI;
 int A, B;
 int ULAout;
 int RDM;
-int estado = 0; // FSM
-int PC = 0;
+int estado = BUSCA; // FSM
 
 decode campos(int instrucao){
     decode c;
@@ -26,33 +25,53 @@ decode campos(int instrucao){
     
     return c;
 }
-void step(int memoria_instrucao[], int registradores[], int *PC){
-    ciclo(memoria_instrucao, registradores, PC);
-}
 void ciclo(int memoria_instrucao[], int registradores[], int *PC){
-    struct decode c;
+    decode c;
     switch (estado){
-        case 0: // BUSCA
+        case BUSCA: // BUSCA
             RI = memoria_instrucao[*PC];
             printf("BUSCA: PC = %d, RI = %d\n", *PC, RI);
             (*PC)++;
-            estado = 1;
+            estado = DECODE;
             break;
-        case 1: // DECODE
+        case DECODE: // DECODE
             c = campos(RI);
-            A = registradores[c.rs];
-            B = registradores[c.rt];
+            int tipo = tipo_instrucao(c.opcode);
+
             printf("DECODE:\n");
             printf("opcode: %d\n", c.opcode);
-            printf("rs: %d\n", c.rs);
-            printf("rt: %d\n", c.rt);
-            
-            estado = 0;
-            break;
+
+        if (tipo == 0){ // R
+            A = registradores[c.rs];
+            B = registradores[c.rt];
+
+            printf("Tipo R\n");
+            printf("rs: %d rt: %d rd: %d funct: %d\n",
+            c.rs, c.rt, c.rd, c.funct);
+    }
+        else if (tipo == 1){ // I
+            A = registradores[c.rs];
+            B = registradores[c.rt];
+
+            printf("Tipo I\n");
+            printf("rs: %d rt: %d imm: %d\n",
+            c.rs, c.rt, c.imm);
+    }
+
+        else if (tipo == 2){ // J
+            printf("Tipo J\n");
+            printf("addr: %d\n", c.addr);
+    }
+
+            estado = EXEC;
+        break;
         default:
-            printf("Estado desconhecido.\n");
+            printf("erro.\n");
             break;
 }
+}
+void step(int memoria_instrucao[], int registradores[], int *PC){
+    ciclo(memoria_instrucao, registradores, PC);
 }
 void run(int memoria_instrucao[], int registradores[], int *PC){
     int ciclos = 0;
