@@ -4,8 +4,8 @@
 //estados fsm
 #define BUSCA 0
 #define DECODE 1
-#define EXEC_R 2
-#define WRITE_R 3
+#define EXEC 2
+#define WRITE 3
 #define MEM_ADDR 4
 #define MEM_READ 5
 #define MEM_WRITEBACK 6
