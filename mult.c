@@ -3,7 +3,7 @@
 #include "simulador.h"
 
 int RI;
-int A, B;
+int A,B;
 int ULAout;
 int RDM;
 int estado = BUSCA; // FSM
@@ -25,17 +25,23 @@ decode campos(int instrucao){
     
     return c;
 }
+void guardarIR(int instrucao){
+    RI = instrucao;
+}
+int retornarIR(){
+    return RI;
+}
 void ciclo(int memoria_instrucao[], int registradores[], int *PC){
     decode c;
     switch (estado){
         case BUSCA: // BUSCA
-            RI = memoria_instrucao[*PC];
+            guardarIR(memoria_instrucao[*PC]);
             printf("BUSCA: PC = %d, RI = %d\n", *PC, RI);
             (*PC)++;
             estado = DECODE;
             break;
         case DECODE: // DECODE
-            c = campos(RI);
+            c = campos(retornarIR());
             int tipo = tipo_instrucao(c.opcode);
 
             printf("DECODE:\n");
@@ -65,6 +71,15 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC){
 
             estado = EXEC;
         break;
+        case EXEC:{
+            int flag;
+            int controle = controle_ULA(c.opcode, c.funct);
+            int resultado = ULA(A, B, controle, &flag);
+            carregarULAout(resultado);
+            printf("EXEC: ULAout = %d\n", resultado);
+            estado = MEM_ADDR;
+            break;
+        }
         default:
             printf("erro.\n");
             break;
@@ -79,6 +94,26 @@ void run(int memoria_instrucao[], int registradores[], int *PC){
         ciclo(memoria_instrucao, registradores, PC);
         ciclos++;
         printf("Ciclo: %d\n", ciclos);
+    }
+}
+int controle_ULA(int opcode, int funct) {
+    switch(opcode) {
+    case 0: // tipo R
+        switch(funct) {
+            case 0: return 0; // ADD
+            case 2: return 2; // SUB
+            case 4: return 4; // AND
+            case 5: return 5; // OR
+            default: return -1;
+            }
+    case 11: // LW
+    case 15: // SW
+    case 4:  // ADDI
+        return 0;
+    case 8: // BEQ
+        return 2; // sub para fazer a comparação
+    default:
+        return -1;
     }
 }
 int ULA(int A, int B, int controle, int *flag) {
@@ -108,4 +143,10 @@ int ULA(int A, int B, int controle, int *flag) {
     }
     
     return resultado;
+}
+void carregarULAout(int resultado){
+    ULAout = resultado;
+}
+int lerULAout(){
+    return ULAout;
 }
