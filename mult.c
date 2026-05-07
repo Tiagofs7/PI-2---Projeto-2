@@ -25,12 +25,31 @@ decode campos(int instrucao){
     
     return c;
 }
+
 void guardarIR(int instrucao){
     RI = instrucao;
+    
 }
 int retornarIR(){
     return RI;
 }
+
+// MUX de 2 entradas (para sinais de controle de 1 bit)
+int MUX2(int entrada0, int entrada1, int controle) {
+    return (controle == 0) ? entrada0 : entrada1;
+}
+
+// MUX de 3/4 entradas (para sinais de controle de 2 bits)
+int MUX4(int entrada0, int entrada1, int entrada2, int entrada3, int controle) {
+    switch(controle) {
+        case 0: return entrada0;
+        case 1: return entrada1;
+        case 2: return entrada2;
+        case 3: return entrada3;
+        default: return entrada0;
+    }
+}
+
 void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
     static decode c; // IMPORTANTE: static para o C lembrar da instrução nos próximos ciclos
 
@@ -106,9 +125,11 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             break;
     }
 }
+
 void step(int memoria_instrucao[], int registradores[], int *PC){
     ciclo(memoria_instrucao, registradores, PC);
 }
+
 void run(int memoria_instrucao[], int registradores[], int *PC){
     int ciclos = 0;
     while (*PC <10){
@@ -117,6 +138,7 @@ void run(int memoria_instrucao[], int registradores[], int *PC){
         printf("Ciclo: %d\n", ciclos);
     }
 }
+
 int controle_ULA(int opcode, int funct) {
     switch(opcode) {
     case 0: // tipo R
@@ -137,6 +159,7 @@ int controle_ULA(int opcode, int funct) {
         return -1;
     }
 }
+
 int ULA(int A, int B, int controle, int *flag) {
     int resultado = 0;
     
@@ -165,9 +188,11 @@ int ULA(int A, int B, int controle, int *flag) {
     
     return resultado;
 }
+
 void carregarULAout(int resultado){
     ULAout = resultado;
 }
+
 int lerULAout(){
     return ULAout;
 }
