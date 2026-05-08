@@ -21,19 +21,7 @@ void escolher_arquivo_mem(char nome_arquivo[]){
 
     fclose(arquivo);
 }
-void escolher_arquivo_dat(char nome_arquivo[]){
-    FILE *arquivo;
 
-    printf("\nDigite o nome do arquivo .dat: ");
-    scanf("%s", nome_arquivo);
-    arquivo = fopen(nome_arquivo, "r");
-    printf("Arquivo carregado.\n");
-    if (arquivo == NULL) {
-        printf("Erro: o arquivo %s nao foi encontrado.\n", nome_arquivo);
-    }
-
-    fclose(arquivo);
-}
 void leitura_arquivo_mem(int memoria[], char nome_arquivo[]) {
     FILE *arquivo = fopen(nome_arquivo, "r");
     
@@ -52,21 +40,7 @@ void leitura_arquivo_mem(int memoria[], char nome_arquivo[]) {
     
     fclose(arquivo);
 }
-void leitura_arquivos_dados(int memoria_dados[], char nome_arquivo[]) {
-    int i = 0;
-    FILE *arquivo = fopen(nome_arquivo, "r");
 
-    if(arquivo == NULL){
-        printf("Erro ao abrir arquivo.\n");
-        return;
-    }
-    
-    while(fscanf(arquivo, "%d", &memoria_dados[i]) != EOF && i < 256) {
-        i++;
-    }
-    
-    fclose(arquivo);
-}
 decode campos(int instrucao){
     decode c;
     
@@ -84,22 +58,27 @@ decode campos(int instrucao){
     
     return c;
 }
+
 void inicializar_registradores(int registradores[]) {
     for (int i = 0; i < 8; i++) {
         registradores[i] = 0;
     }
 }
+
 void guardarIR(int instrucao){
     RI = instrucao;
     
 }
+
 int retornarIR(){
     return RI;
 }
+
 // MUX de 2 entradas (para sinais de controle de 1 bit)
 int MUX2(int entrada0, int entrada1, int controle) {
     return (controle == 0) ? entrada0 : entrada1;
 }
+
 // MUX de 3/4 entradas (para sinais de controle de 2 bits)
 int MUX4(int entrada0, int entrada1, int entrada2, int entrada3, int controle) {
     switch(controle) {
@@ -110,6 +89,7 @@ int MUX4(int entrada0, int entrada1, int entrada2, int entrada3, int controle) {
         default: return entrada0;
     }
 }
+
 sinaisControle gerarSinais(int opcode, int funct){
     sinaisControle s = {0, 0, 0, 0, 0, 0, 0};
     switch(opcode) {
@@ -143,6 +123,7 @@ sinaisControle gerarSinais(int opcode, int funct){
     }
     return s;
 }
+
 int controle_ULA(int opcode, int funct) {
     switch(opcode) {
     case 0: // tipo R
@@ -163,6 +144,7 @@ int controle_ULA(int opcode, int funct) {
         return -1;
     }
 }
+
 int ULA(int A, int B, int controle, int *flag) {
     int resultado = 0;
     
@@ -191,12 +173,15 @@ int ULA(int A, int B, int controle, int *flag) {
     
     return resultado;
 }
+
 void carregarULAout(int resultado){
     ULAout = resultado;
 }
+
 int lerULAout(){
     return ULAout;
 }
+
 void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
     decode c = campos(RI);
 
