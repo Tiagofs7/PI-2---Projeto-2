@@ -143,6 +143,60 @@ sinaisControle gerarSinais(int opcode, int funct){
     }
     return s;
 }
+int controle_ULA(int opcode, int funct) {
+    switch(opcode) {
+    case 0: // tipo R
+        switch(funct) {
+            case 0: return 0; // ADD
+            case 2: return 2; // SUB
+            case 4: return 4; // AND
+            case 5: return 5; // OR
+            default: return -1;
+            }
+    case 11: // LW
+    case 15: // SW
+    case 4:  // ADDI
+        return 0;
+    case 8: // BEQ
+        return 2; // sub para fazer a comparação
+    default:
+        return -1;
+    }
+}
+int ULA(int A, int B, int controle, int *flag) {
+    int resultado = 0;
+    
+    switch(controle) {
+        case 0:
+            resultado = A + B; 
+            break;
+        case 2: 
+            resultado = A - B;
+            break;
+        case 4: 
+            resultado = A & B; 
+            break;
+        case 5: 
+            resultado = A | B; 
+            break;
+        default: 
+            resultado = 0;
+    }
+    
+    *flag = (resultado == 0);
+    
+    if (resultado > 127 || resultado < -128) {
+        printf("Overflow.\n");
+    }
+    
+    return resultado;
+}
+void carregarULAout(int resultado){
+    ULAout = resultado;
+}
+int lerULAout(){
+    return ULAout;
+}
 void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
     static decode c;
 
@@ -265,58 +319,4 @@ void run(int memoria_instrucao[], int registradores[], int *PC){
         ciclos++;
         printf("Ciclo: %d\n", ciclos);
     }
-}
-int controle_ULA(int opcode, int funct) {
-    switch(opcode) {
-    case 0: // tipo R
-        switch(funct) {
-            case 0: return 0; // ADD
-            case 2: return 2; // SUB
-            case 4: return 4; // AND
-            case 5: return 5; // OR
-            default: return -1;
-            }
-    case 11: // LW
-    case 15: // SW
-    case 4:  // ADDI
-        return 0;
-    case 8: // BEQ
-        return 2; // sub para fazer a comparação
-    default:
-        return -1;
-    }
-}
-int ULA(int A, int B, int controle, int *flag) {
-    int resultado = 0;
-    
-    switch(controle) {
-        case 0:
-            resultado = A + B; 
-            break;
-        case 2: 
-            resultado = A - B;
-            break;
-        case 4: 
-            resultado = A & B; 
-            break;
-        case 5: 
-            resultado = A | B; 
-            break;
-        default: 
-            resultado = 0;
-    }
-    
-    *flag = (resultado == 0);
-    
-    if (resultado > 127 || resultado < -128) {
-        printf("Overflow.\n");
-    }
-    
-    return resultado;
-}
-void carregarULAout(int resultado){
-    ULAout = resultado;
-}
-int lerULAout(){
-    return ULAout;
 }
