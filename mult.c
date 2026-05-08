@@ -198,21 +198,21 @@ int lerULAout(){
     return ULAout;
 }
 void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
-    static decode c;
+    decode c = campos(RI);
 
     switch (estado) {
         case BUSCA: 
-            guardarIR(memoria_instrucao[*PC]);
+            RI = memoria_instrucao[*PC]; 
             printf("BUSCA: PC = %d, RI = %d\n", *PC, RI);
             (*PC)++;
             estado = DECODE;
             break;
         case DECODE: 
-            c = campos(retornarIR());
             printf("DECODE: opcode: %d\n", c.opcode);
 
             A = registradores[c.rs];
             B = registradores[c.rt];
+            
             sinaisControle sinais = gerarSinais(c.opcode, c.funct);
 
             if (c.opcode == 0 || c.opcode == 4) {
@@ -228,19 +228,20 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
         case EXEC: { 
             int flag;
             int op2 = (c.opcode == 4) ? c.imm : B; 
-            
             int controle = controle_ULA(c.opcode, c.funct); 
             
-            carregarULAout(ULA(A, op2, controle, &flag));
-            printf("[C3] Executa ULA: ULAout=%d\n", lerULAout());
+            // O resultado matemático é gravado direto no REGISTRADOR ULAout
+            ULAout = ULA(A, op2, controle, &flag);
+            printf("[C3] Executa ULA: ULAout=%d\n", ULAout);
             
             estado = WRITE;
             break;
         }
         case MEM_ADDR: {
             int flag;
-            carregarULAout(ULA(A, c.imm, 0, &flag)); 
-            printf("[C3] Calc Endereco: ULAout=%d\n", lerULAout());
+            
+            ULAout = ULA(A, c.imm, 0, &flag); 
+            printf("[C3] Calc Endereco: ULAout=%d\n", ULAout);
             
             estado = (c.opcode == 11) ? MEM_READ : MEM_WRITE; 
             break;
@@ -261,12 +262,13 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             
             estado = BUSCA;
             break;
+
         case WRITE: { 
             int sinal_RegDst = (c.opcode == 0) ? 1 : 0;
             int reg_destino = MUX2(c.rt, c.rd, sinal_RegDst);
 
             int sinal_MemParaReg = 0;
-            int dado_escrita = MUX2(lerULAout(), RDM, sinal_MemParaReg);
+            int dado_escrita = MUX2(ULAout, RDM, sinal_MemParaReg);
 
             registradores[reg_destino] = dado_escrita;
             printf("[C4] Escrita Reg: $%d = %d\n", reg_destino, dado_escrita);
@@ -275,17 +277,15 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             break;
         }
         case MEM_WRITE: {
-            int endereco = lerULAout();
-            memoria_instrucao[endereco] = B; 
-            printf("[C4] Escrita Mem: Mem[%d] = %d\n", endereco, B);
+            memoria_instrucao[ULAout] = B; 
+            printf("[C4] Escrita Mem: Mem[%d] = %d\n", ULAout, B);
 
             estado = BUSCA;
             break;
         }
         case MEM_READ: {
-            int endereco = lerULAout();
-            RDM = memoria_instrucao[endereco]; 
-            printf("[C4] Leitura Mem: RDM = %d (lido do endereco %d)\n", RDM, endereco);
+            RDM = memoria_instrucao[ULAout]; 
+            printf("[C4] Leitura Mem: RDM = %d (lido do endereco %d)\n", RDM, ULAout);
 
             estado = MEM_WRITEBACK;
             break;
@@ -295,7 +295,7 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             int reg_destino = MUX2(c.rt, c.rd, sinal_RegDst);
 
             int sinal_MemParaReg = 1;
-            int dado_escrita = MUX2(lerULAout(), RDM, sinal_MemParaReg);
+            int dado_escrita = MUX2(ULAout, RDM, sinal_MemParaReg);
 
             registradores[reg_destino] = dado_escrita;
             printf("[C5] Writeback (LW): $%d = %d\n", reg_destino, dado_escrita);
@@ -309,9 +309,11 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             break;
     }
 }
+
 void step(int memoria_instrucao[], int registradores[], int *PC){
     ciclo(memoria_instrucao, registradores, PC);
 }
+
 void run(int memoria_instrucao[], int registradores[], int *PC){
     int ciclos = 0;
     while (*PC <10){
