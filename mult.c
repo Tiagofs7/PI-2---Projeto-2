@@ -6,7 +6,7 @@ int RI;
 int A,B;
 int ULAout;
 int RDM;
-int estado = BUSCA; // FSM
+int estado = BUSCA;
 
 decode campos(int instrucao){
     decode c;
@@ -51,7 +51,7 @@ int MUX4(int entrada0, int entrada1, int entrada2, int entrada3, int controle) {
 }
 
 void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
-    static decode c; // IMPORTANTE: static para o C lembrar da instrução nos próximos ciclos
+    static decode c;
 
     switch (estado) {
         case BUSCA: 
@@ -118,6 +118,52 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             
             estado = BUSCA;
             break;
+
+        case WRITE: { 
+            int sinal_RegDst = (c.opcode == 0) ? 1 : 0;
+            int reg_destino = MUX2(c.rt, c.rd, sinal_RegDst);
+
+            int sinal_MemParaReg = 0;
+            int dado_escrita = MUX2(lerULAout(), RDM, sinal_MemParaReg);
+
+            registradores[reg_destino] = dado_escrita;
+            printf("[C4] Escrita Reg: $%d = %d\n", reg_destino, dado_escrita);
+
+            estado = BUSCA;
+            break;
+        }
+
+        case MEM_WRITE: {
+            int endereco = lerULAout();
+            memoria_instrucao[endereco] = B; 
+            printf("[C4] Escrita Mem: Mem[%d] = %d\n", endereco, B);
+
+            estado = BUSCA;
+            break;
+        }
+
+        case MEM_READ: {
+            int endereco = lerULAout();
+            RDM = memoria_instrucao[endereco]; 
+            printf("[C4] Leitura Mem: RDM = %d (lido do endereco %d)\n", RDM, endereco);
+
+            estado = MEM_WRITEBACK;
+            break;
+        }
+        
+        case MEM_WRITEBACK: {
+            int sinal_RegDst = 0;
+            int reg_destino = MUX2(c.rt, c.rd, sinal_RegDst);
+
+            int sinal_MemParaReg = 1;
+            int dado_escrita = MUX2(lerULAout(), RDM, sinal_MemParaReg);
+
+            registradores[reg_destino] = dado_escrita;
+            printf("[C5] Writeback (LW): $%d = %d\n", reg_destino, dado_escrita);
+
+            estado = BUSCA;
+            break;
+        }
 
         default:
             printf("erro.\n");
