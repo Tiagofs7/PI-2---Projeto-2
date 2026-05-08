@@ -49,7 +49,6 @@ int MUX4(int entrada0, int entrada1, int entrada2, int entrada3, int controle) {
         default: return entrada0;
     }
 }
-
 void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
     static decode c;
 
@@ -60,7 +59,6 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             (*PC)++;
             estado = DECODE;
             break;
-
         case DECODE: 
             c = campos(retornarIR());
             printf("DECODE: opcode: %d\n", c.opcode);
@@ -78,7 +76,6 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
                 estado = JUMP;
             }
             break;
-
         case EXEC: { 
             int flag;
             int op2 = (c.opcode == 4) ? c.imm : B; 
@@ -91,7 +88,6 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             estado = WRITE;
             break;
         }
-        
         case MEM_ADDR: {
             int flag;
             carregarULAout(ULA(A, c.imm, 0, &flag)); 
@@ -100,7 +96,6 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             estado = (c.opcode == 11) ? MEM_READ : MEM_WRITE; 
             break;
         }
-        
         case BRANCH: {
             int flag;
             ULA(A, B, 2, &flag); 
@@ -111,14 +106,12 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             estado = BUSCA;
             break;
         }
-        
         case JUMP:
             *PC = c.addr;
             printf("[C3] JUMP: PC=%d\n", *PC);
             
             estado = BUSCA;
             break;
-
         case WRITE: { 
             int sinal_RegDst = (c.opcode == 0) ? 1 : 0;
             int reg_destino = MUX2(c.rt, c.rd, sinal_RegDst);
@@ -132,7 +125,6 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             estado = BUSCA;
             break;
         }
-
         case MEM_WRITE: {
             int endereco = lerULAout();
             memoria_instrucao[endereco] = B; 
@@ -141,7 +133,6 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             estado = BUSCA;
             break;
         }
-
         case MEM_READ: {
             int endereco = lerULAout();
             RDM = memoria_instrucao[endereco]; 
@@ -150,7 +141,6 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             estado = MEM_WRITEBACK;
             break;
         }
-        
         case MEM_WRITEBACK: {
             int sinal_RegDst = 0;
             int reg_destino = MUX2(c.rt, c.rd, sinal_RegDst);
@@ -164,18 +154,15 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
             estado = BUSCA;
             break;
         }
-
         default:
             printf("erro.\n");
             estado = BUSCA;
             break;
     }
 }
-
 void step(int memoria_instrucao[], int registradores[], int *PC){
     ciclo(memoria_instrucao, registradores, PC);
 }
-
 void run(int memoria_instrucao[], int registradores[], int *PC){
     int ciclos = 0;
     while (*PC <10){
@@ -184,7 +171,6 @@ void run(int memoria_instrucao[], int registradores[], int *PC){
         printf("Ciclo: %d\n", ciclos);
     }
 }
-
 int controle_ULA(int opcode, int funct) {
     switch(opcode) {
     case 0: // tipo R
@@ -205,7 +191,6 @@ int controle_ULA(int opcode, int funct) {
         return -1;
     }
 }
-
 int ULA(int A, int B, int controle, int *flag) {
     int resultado = 0;
     
@@ -234,11 +219,9 @@ int ULA(int A, int B, int controle, int *flag) {
     
     return resultado;
 }
-
 void carregarULAout(int resultado){
     ULAout = resultado;
 }
-
 int lerULAout(){
     return ULAout;
 }
