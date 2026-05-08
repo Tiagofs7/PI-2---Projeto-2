@@ -84,7 +84,11 @@ decode campos(int instrucao){
     
     return c;
 }
-
+void inicializar_registradores(int registradores[]) {
+    for (int i = 0; i < 8; i++) {
+        registradores[i] = 0;
+    }
+}
 void guardarIR(int instrucao){
     RI = instrucao;
     
@@ -92,12 +96,10 @@ void guardarIR(int instrucao){
 int retornarIR(){
     return RI;
 }
-
 // MUX de 2 entradas (para sinais de controle de 1 bit)
 int MUX2(int entrada0, int entrada1, int controle) {
     return (controle == 0) ? entrada0 : entrada1;
 }
-
 // MUX de 3/4 entradas (para sinais de controle de 2 bits)
 int MUX4(int entrada0, int entrada1, int entrada2, int entrada3, int controle) {
     switch(controle) {
@@ -107,6 +109,39 @@ int MUX4(int entrada0, int entrada1, int entrada2, int entrada3, int controle) {
         case 3: return entrada3;
         default: return entrada0;
     }
+}
+sinaisControle gerarSinais(int opcode, int funct){
+    sinaisControle s = {0, 0, 0, 0, 0, 0, 0};
+    switch(opcode) {
+        case 0:
+            s.RegDst = 1;
+            s.ULAOp = controle_ULA(opcode, funct);
+            break;
+        case 4:
+            s.RegDst = 0;
+            s.ULAOp = 0;
+            break;
+        case 11:
+            s.RegDst = 0;
+            s.MemPReg = 1;
+            s.ULAOp = 0;
+            s.MemRead = 1;
+            break;
+        case 15:
+            s.ULAOp = 0;
+            s.MemWrite = 1;
+            break;
+        case 8:
+            s.ULAOp = 2;
+            s.Branch = 1;
+            break;
+        case 2:
+            s.Jump = 1;
+            break;
+        default:
+            printf("Instrucao invalida!\n");
+    }
+    return s;
 }
 void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
     static decode c;
@@ -124,6 +159,7 @@ void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
 
             A = registradores[c.rs];
             B = registradores[c.rt];
+            sinaisControle sinais = gerarSinais(c.opcode, c.funct);
 
             if (c.opcode == 0 || c.opcode == 4) {
                 estado = EXEC;
