@@ -8,6 +8,65 @@ int ULAout;
 int RDM;
 int estado = BUSCA;
 
+void escolher_arquivo_mem(char nome_arquivo[]){
+    FILE *arquivo;
+
+    printf("\nDigite o nome do arquivo .mem: ");
+    scanf("%s", nome_arquivo);
+    arquivo = fopen(nome_arquivo, "r");
+    printf("Arquivo carregado.\n");
+    if (arquivo == NULL) {
+        printf("Erro: o arquivo %s nao foi encontrado.\n", nome_arquivo);
+    }
+
+    fclose(arquivo);
+}
+void escolher_arquivo_dat(char nome_arquivo[]){
+    FILE *arquivo;
+
+    printf("\nDigite o nome do arquivo .dat: ");
+    scanf("%s", nome_arquivo);
+    arquivo = fopen(nome_arquivo, "r");
+    printf("Arquivo carregado.\n");
+    if (arquivo == NULL) {
+        printf("Erro: o arquivo %s nao foi encontrado.\n", nome_arquivo);
+    }
+
+    fclose(arquivo);
+}
+void leitura_arquivo_mem(int memoria[], char nome_arquivo[]) {
+    FILE *arquivo = fopen(nome_arquivo, "r");
+    
+    if(arquivo == NULL) {
+        printf("Erro ao abrir o arquivo.\n");
+        return;
+    }
+    
+    int i = 0;
+    char linha[17];
+    
+    while (fscanf(arquivo, "%s", linha) != EOF && i < 256) {
+        memoria[i] = (int)strtol(linha, NULL, 2);
+        i++;
+    }
+    
+    fclose(arquivo);
+}
+void leitura_arquivos_dados(int memoria_dados[], char nome_arquivo[]) {
+    int i = 0;
+    FILE *arquivo = fopen(nome_arquivo, "r");
+
+    if(arquivo == NULL){
+        printf("Erro ao abrir arquivo.\n");
+        return;
+    }
+    
+    while(fscanf(arquivo, "%d", &memoria_dados[i]) != EOF && i < 256) {
+        i++;
+    }
+    
+    fclose(arquivo);
+}
 decode campos(int instrucao){
     decode c;
     
