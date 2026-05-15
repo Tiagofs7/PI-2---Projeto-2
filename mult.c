@@ -225,13 +225,13 @@ void ciclo(int mem[], int regs[], int PC) {
 
     int ula_A = MUX2(PC, A, s.ULAFonteA);
     int ula_B = MUX4(B, 1, c.imm, c.imm, s.ULAFonteB);
-    int res   = ULA(ula_A, ula_B, s.ULAControle, &flag);
-    int end   = MUX2(*PC, ULAout, s.IouD);
+    int res = ULA(ula_A, ula_B, s.ULAControle, &flag);
+    int end = MUX2(*PC, ULAout, s.IouD);
 
-    if (s.IREsc)              RI  = mem[end];
-    if (s.LerRegs)          { A   = regs[c.rs]; B = regs[c.rt]; }
+    if (s.IREsc) RI  = mem[end];
+    if (s.LerRegs) { A   = regs[c.rs]; B = regs[c.rt]; }
     if (s.LerMem && !s.IREsc) RDM = mem[end];
-    if (s.EscMem)             mem[end] = B;
+    if (s.EscMem) mem[end] = B;
 
     if (estado==BUSCA  estado==DECODE 
  estado==EXEC || estado==MEM_ADDR)
@@ -240,7 +240,7 @@ void ciclo(int mem[], int regs[], int PC) {
     if (s.EscReg)
         regs[MUX2(c.rt, c.rd, s.RegDst)] = MUX2(ULAout, RDM, s.MemParaReg);
 
-    if (s.PCEsc)          PC = MUX4(res, ULAout, c.addr, 0, s.PCFonte);
+    if (s.PCEsc) PC = MUX4(res, ULAout, c.addr, 0, s.PCFonte);
     if (s.Branch && flag)PC = ULAout;
 
     estado = proximo_estado(estado, c.opcode);
