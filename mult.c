@@ -149,9 +149,8 @@ int proximo_estado(int estado, int opcode) {
     switch (estado) {
         case BUSCA:return DECODE;
         case DECODE:
-            if (opcode == 0  opcode == 4) return EXEC;
-            if (opcode == 11 
-            opcode == 15) return MEM_ADDR;
+            if (opcode == 0 || opcode == 4) return EXEC;
+            if (opcode == 11 || opcode == 15) return MEM_ADDR;
             if (opcode == 8)  return BRANCH;
             if (opcode == 2)  return JUMP;
             return BUSCA;
@@ -218,7 +217,7 @@ void carregarULAout(int resultado){
 int lerULAout(){
     return ULAout;
 }
-void ciclo(int mem[], int regs[], int PC) {
+void ciclo(int mem[], int regs[], int *PC) {
     decode c = campos(RI);
     sinaisControle s = gerarSinais(estado, c.opcode, c.funct);
     int flag = 0;
@@ -233,8 +232,7 @@ void ciclo(int mem[], int regs[], int PC) {
     if (s.LerMem && !s.IREsc) RDM = mem[end];
     if (s.EscMem) mem[end] = B;
 
-    if (estado==BUSCA  estado==DECODE 
- estado==EXEC || estado==MEM_ADDR)
+    if (estado==BUSCA || estado==DECODE || estado==EXEC || estado==MEM_ADDR)
         ULAout = res;
 
     if (s.EscReg)
