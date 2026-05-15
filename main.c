@@ -37,25 +37,18 @@ int main() {
                 memset(memoria, 0, sizeof(memoria));
                 PC = 0;
                 estado = BUSCA;
-                resetar_estatisticas();
                 inicializar_registradores(registradores);
                 num_instrucoes = leitura_arquivo_mem(memoria, nome);
                 break;
             }
             case 2:
-                if (num_instrucoes == 0) { printf("Carregue um arquivo .mem primeiro.\n"); break; }
-                imprimir_memorias(memoria, num_instrucoes);
-                break;
             case 3:
-                imprimir_registradores(registradores, PC);
-                break;
             case 4: {
                 if (num_instrucoes == 0) { printf("Carregue um arquivo .mem primeiro.\n"); break; }
                 printf("\n--- Iniciando Execucao ---\n");
                 while (estado != BUSCA || PC < num_instrucoes) {
-                    if (estado == BUSCA) registrar_instrucao(memoria, PC);
+                    if (estado == BUSCA)
                     ciclo(memoria, registradores, &PC);
-                    incrementar_ciclos();
                 }
                 printf("--- Execucao concluida ---\n");
                 break;
@@ -68,9 +61,6 @@ int main() {
                 printf("Step executado. PC=%d | Estado=%d\n", PC, estado);
                 break;
             }
-            case 6:
-                imprimir_estatisticas();
-                break;
             case 0:
                 printf("Saindo...\n");
                 break;
