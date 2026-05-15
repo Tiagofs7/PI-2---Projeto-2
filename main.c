@@ -42,7 +42,11 @@ int main() {
                 break;
             }
             case 2:
+                printf("Funcao nao implementada.\n");
+                break;
             case 3:
+                printf("Funcao nao implementada.\n");
+                break;
             case 4: {
                 if (num_instrucoes == 0) { printf("Carregue um arquivo .mem primeiro.\n"); break; }
                 printf("\n--- Iniciando Execucao ---\n");
