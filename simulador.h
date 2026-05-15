@@ -27,6 +27,14 @@ typedef struct sinaisControle {
     int ULAFonteA, ULAFonteB, ULAControle, PCFonte, Branch;
 } sinaisControle;
 
+int controle_ULA(int opcode, int funct);
+int ULA(int A, int B, int controle, int *flag);
+int MUX2(int entrada0, int entrada1, int controle);
+int MUX4(int entrada0, int entrada1, int entrada2, int entrada3, int controle);
+void ciclo(int memoria[], int registradores[], int *PC);
+void inicializar_registradores(int registradores[]);
+void run(int memoria[], int registradores[], int *PC, int num_instrucoes);
+extern int RI, A, B, ULAout, RDM, estado;
 decode campos(int instrucao);
 sinaisControle gerarSinais(int estado, int opcode, int funct);
 int proximo_estado(int estado, int opcode);
