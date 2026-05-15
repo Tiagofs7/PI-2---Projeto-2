@@ -22,7 +22,7 @@ void escolher_arquivo_mem(char nome_arquivo[]){
     fclose(arquivo);
 }
 
-void leitura_arquivo_mem(int memoria[], char nome_arquivo[]) {
+int leitura_arquivo_mem(int memoria[], char nome_arquivo[]) {
     FILE *arquivo = fopen(nome_arquivo, "r");
     
     if(arquivo == NULL) {
@@ -39,6 +39,7 @@ void leitura_arquivo_mem(int memoria[], char nome_arquivo[]) {
     }
     
     fclose(arquivo);
+    return i;
 }
 
 decode campos(int instrucao){
