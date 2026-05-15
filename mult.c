@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "simulador.h"
 
 int RI;
@@ -7,6 +8,23 @@ int A,B;
 int ULAout;
 int RDM;
 int estado = BUSCA;
+
+void instrucao_para_asm(int instrucao, char *buf) {
+    int op   = (instrucao >> 12) & 0xF;
+    int rs   = (instrucao >> 9)  & 0x7;
+    int rt   = (instrucao >> 6)  & 0x7;
+    int rd   = (instrucao >> 3)  & 0x7;
+    int fn   =  instrucao        & 0x7;
+    int imm  =  instrucao        & 0x3F; if (imm >= 32) imm -= 64;
+
+    if      (op == 0)  sprintf(buf, "tipo R: $%d = $%d op $%d (funct=%d)", rd, rs, rt, fn);
+    else if (op == 4)  sprintf(buf, "addi $%d = $%d + %d", rt, rs, imm);
+    else if (op == 8)  sprintf(buf, "beq $%d, $%d, %d",    rs, rt, imm);
+    else if (op == 11) sprintf(buf, "lw $%d, %d($%d)",     rt, imm, rs);
+    else if (op == 15) sprintf(buf, "sw $%d, %d($%d)",     rt, imm, rs);
+    else if (op == 2)  sprintf(buf, "jump %d", instrucao & 0xFF);
+    else               sprintf(buf, "op=%d", op);
+}
 
 void escolher_arquivo_mem(char nome_arquivo[]){
     FILE *arquivo;
@@ -24,20 +42,25 @@ void escolher_arquivo_mem(char nome_arquivo[]){
 
 int leitura_arquivo_mem(int memoria[], char nome_arquivo[]) {
     FILE *arquivo = fopen(nome_arquivo, "r");
-    
-    if(arquivo == NULL) {
+    if (arquivo == NULL) {
         printf("Erro ao abrir o arquivo.\n");
         return 0;
     }
-    
-    int i = 0;
-    char linha[17];
-    
-    while (fscanf(arquivo, "%s", linha) != EOF && i < 256) {
-        memoria[i] = (int)strtol(linha, NULL, 2);
-        i++;
+
+    char linha[100];
+    int i = 0, dados = 0;
+
+    while (fscanf(arquivo, "%s", linha) != EOF) {
+        if (strcmp(linha, ".data") == 0) { dados = 1; continue; }
+
+        if (dados) {
+            char *sep = strchr(linha, ':');
+            if (sep) { *sep = '\0'; memoria[atoi(linha)] = (int)strtol(sep+1, NULL, 2); }
+        } else {
+            memoria[i++] = (int)strtol(linha, NULL, 2);
+        }
     }
-    
+
     fclose(arquivo);
     return i;
 }
