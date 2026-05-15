@@ -305,11 +305,8 @@ void step(int memoria_instrucao[], int registradores[], int *PC){
     ciclo(memoria_instrucao, registradores, PC);
 }
 
-void run(int memoria_instrucao[], int registradores[], int *PC){
-    int ciclos = 0;
-    while (*PC <10){
+void run(int memoria_instrucao[], int registradores[], int *PC, int num_instrucoes) {
+    while (estado != BUSCA || *PC < num_instrucoes) {
         ciclo(memoria_instrucao, registradores, PC);
-        ciclos++;
-        printf("Ciclo: %d\n", ciclos);
     }
 }
