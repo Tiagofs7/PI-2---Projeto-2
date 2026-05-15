@@ -27,7 +27,7 @@ int leitura_arquivo_mem(int memoria[], char nome_arquivo[]) {
     
     if(arquivo == NULL) {
         printf("Erro ao abrir o arquivo.\n");
-        return;
+        return 0;
     }
     
     int i = 0;
@@ -223,7 +223,7 @@ void ciclo(int mem[], int regs[], int *PC) {
     sinaisControle s = gerarSinais(estado, c.opcode, c.funct);
     int flag = 0;
 
-    int ula_A = MUX2(PC, A, s.ULAFonteA);
+    int ula_A = MUX2(*PC, A, s.ULAFonteA);
     int ula_B = MUX4(B, 1, c.imm, c.imm, s.ULAFonteB);
     int res = ULA(ula_A, ula_B, s.ULAControle, &flag);
     int end = MUX2(*PC, ULAout, s.IouD);
@@ -239,8 +239,8 @@ void ciclo(int mem[], int regs[], int *PC) {
     if (s.EscReg)
         regs[MUX2(c.rt, c.rd, s.RegDst)] = MUX2(ULAout, RDM, s.MemParaReg);
 
-    if (s.PCEsc) PC = MUX4(res, ULAout, c.addr, 0, s.PCFonte);
-    if (s.Branch && flag)PC = ULAout;
+    if (s.PCEsc) *PC = MUX4(res, ULAout, c.addr, 0, s.PCFonte);
+    if (s.Branch && flag)*PC = ULAout;
 
     estado = proximo_estado(estado, c.opcode);
 }
