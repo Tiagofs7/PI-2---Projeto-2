@@ -37,6 +37,8 @@ void run(int memoria[], int registradores[], int *PC, int num_instrucoes);
 decode campos(int instrucao);
 sinaisControle gerarSinais(int estado, int opcode, int funct);
 int proximo_estado(int estado, int opcode);
+int leitura_arquivo_mem(int memoria[], char nome_arquivo[]);
+void instrucao_para_asm(int instrucao, char *buf);
 
 extern int RI, A, B, ULAout, RDM, estado;
 
