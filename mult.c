@@ -90,40 +90,61 @@ int MUX4(int entrada0, int entrada1, int entrada2, int entrada3, int controle) {
     }
 }
 
-sinaisControle gerarSinais(int opcode, int funct){
-    sinaisControle s = {0, 0, 0, 0, 0, 0, 0};
-    switch(opcode) {
-        case 0:
-            s.RegDst = 1;
-            s.ULAOp = controle_ULA(opcode, funct);
+sinaisControle gerarSinais(int estado, int opcode, int funct) {
+    sinaisControle s = {0};
+    switch (estado) {
+        case BUSCA:
+            s.IREsc = 1;
+            s.LerMem = 1;
+            s.ULAFonteB = 1;
+            s.ULAControle = 0;
+            s.PCEsc = 1;
+            s.PCFonte = 0;
             break;
-        case 4:
-            s.RegDst = 0;
-            s.ULAOp = 0;
+        case DECODE:
+            s.LerRegs = 1;
+            s.ULAFonteB = 2;
+            s.ULAControle = 0;
             break;
-        case 11:
-            s.RegDst = 0;
-            s.MemPReg = 1;
-            s.ULAOp = 0;
-            s.MemRead = 1;
+        case EXEC:
+            s.ULAFonteA = 1;
+            s.ULAFonteB = (opcode == 0) ? 0 : 2;
+            s.ULAControle = controle_ULA(opcode, funct);
             break;
-        case 15:
-            s.ULAOp = 0;
-            s.MemWrite = 1;
+        case MEM_ADDR:
+            s.ULAFonteA = 1;
+            s.ULAFonteB = 2;
+            s.ULAControle = 0;
             break;
-        case 8:
-            s.ULAOp = 2;
+        case MEM_READ:
+            s.IouD = 1;
+            s.LerMem = 1;
+            break;
+        case MEM_WRITEBACK:
+            s.EscReg = 1;
+            s.MemParaReg = 1;
+            break;
+        case MEM_WRITE:
+            s.IouD = 1;
+            s.EscMem = 1;
+            break;
+        case WRITE:
+            s.EscReg = 1;
+            s.RegDst = (opcode == 0) ? 1 : 0;
+            break;
+        case BRANCH:
+            s.ULAFonteA = 1;
+            s.ULAControle = 2;
             s.Branch = 1;
+            s.PCFonte = 1;
             break;
-        case 2:
-            s.Jump = 1;
+        case JUMP:
+            s.PCEsc = 1;
+            s.PCFonte = 2;
             break;
-        default:
-            printf("Instrucao invalida!\n");
     }
     return s;
 }
-
 int controle_ULA(int opcode, int funct) {
     switch(opcode) {
     case 0: // tipo R
