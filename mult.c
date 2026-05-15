@@ -267,12 +267,46 @@ void ciclo(int mem[], int regs[], int *PC) {
 
     estado = proximo_estado(estado, c.opcode);
 }
+void imprimir_estado_cpu(int PC){
+    printf("\n=== Estado da CPU ===\n");
+    printf("PC = %d\n", PC);
+    printf("RI = %d\n", RI);
+    printf("ULAout = %d\n", ULAout);
+    printf("RDM = %d\n", RDM);
+    printf("Estado = %d\n", estado);
+}
+void imprimir_registradores(int registradores[]) {
+    printf("\n=== Registradores ===\n");
+    for (int i = 0; i < 8; i++) {
+        printf("$%d = %d\n", i, registradores[i]);
+    }
+}
+void imprimir_memoria_instrucao(int memoria[], int num_instr) {
+    printf("\n=== Memória de Instruções ===\n");
+    for (int i = 0; i < num_instr; i++) {
+        char buf[100];
+        instrucao_para_asm(memoria[i], buf);
+        printf("mem[%d] = %d -> %s\n", i, memoria[i], buf);
+    }
+}
+void imprimir_memoria_dados(int memoria[], int inicio, int fim) {
+    printf("\n=== Memória de Dados ===\n");
+    for (int i = inicio; i <= fim; i++) {
+        printf("mem[%d] = %d\n", i, memoria[i]);
+    }
+}
 void step(int memoria_instrucao[], int registradores[], int *PC){
     ciclo(memoria_instrucao, registradores, PC);
+    imprimir_estado_cpu(*PC);
+    imprimir_registradores(registradores);
 }
 
 void run(int memoria_instrucao[], int registradores[], int *PC, int num_instrucoes) {
     while (estado != BUSCA || *PC < num_instrucoes) {
-        ciclo(memoria_instrucao, registradores, PC);
+        ciclo(memoria_instrucao, registradores, PC);        
+        imprimir_estado_cpu(*PC);
+        imprimir_registradores(registradores);
     }
+    imprimir_memoria_instrucao(memoria_instrucao, num_instrucoes);
+    imprimir_memoria_dados(memoria_instrucao, num_instrucoes, 255);
 }
