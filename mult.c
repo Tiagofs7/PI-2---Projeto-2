@@ -145,6 +145,22 @@ sinaisControle gerarSinais(int estado, int opcode, int funct) {
     }
     return s;
 }
+int proximo_estado(int estado, int opcode) {
+    switch (estado) {
+        case BUSCA:return DECODE;
+        case DECODE:
+            if (opcode == 0  opcode == 4) return EXEC;
+            if (opcode == 11 
+            opcode == 15) return MEM_ADDR;
+            if (opcode == 8)  return BRANCH;
+            if (opcode == 2)  return JUMP;
+            return BUSCA;
+        case EXEC: return WRITE;
+        case MEM_ADDR: return (opcode == 11) ? MEM_READ : MEM_WRITE;
+        case MEM_READ: return MEM_WRITEBACK;
+        default: return BUSCA;
+    }
+}
 int controle_ULA(int opcode, int funct) {
     switch(opcode) {
     case 0: // tipo R
