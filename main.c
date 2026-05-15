@@ -28,12 +28,14 @@ int main() {
         printf("0 - Sair\n");
         printf("Escolha: ");
         scanf("%d", &opcao);
+        getchar();
 
         switch (opcao) {
             case 1: {
                 char nome[100];
                 printf("Nome do arquivo .mem: ");
                 scanf("%s", nome);
+                getchar();
                 memset(memoria, 0, sizeof(memoria));
                 PC = 0;
                 estado = BUSCA;
@@ -50,8 +52,14 @@ int main() {
             case 4: {
                 if (num_instrucoes == 0) { printf("Carregue um arquivo .mem primeiro.\n"); break; }
                 printf("\n--- Iniciando Execucao ---\n");
+                const char *nomes_estado[] = {
+                    "BUSCA","DECODE","EXEC","WRITE","MEM_ADDR",
+                    "MEM_READ","MEM_WRITEBACK","MEM_WRITE","BRANCH","JUMP"
+                };
                 while (estado != BUSCA || PC < num_instrucoes) {
-                    if (estado == BUSCA)
+                    char asm_str[64];
+                    instrucao_para_asm(estado == BUSCA ? memoria[PC] : RI, asm_str);
+                    printf("[%s] PC=%d | %s\n", nomes_estado[estado], PC, asm_str);
                     ciclo(memoria, registradores, &PC);
                 }
                 printf("--- Execucao concluida ---\n");
@@ -59,12 +67,23 @@ int main() {
             }
             case 5: {
                 if (num_instrucoes == 0) { printf("Carregue um arquivo .mem primeiro.\n"); break; }
-                if (estado == BUSCA) registrar_instrucao(memoria, PC);
+
+                const char *nomes_estado[] = {
+                    "BUSCA","DECODE","EXEC","WRITE","MEM_ADDR",
+                    "MEM_READ","MEM_WRITEBACK","MEM_WRITE","BRANCH","JUMP"
+                };
+
+                char asm_str[64];
+                instrucao_para_asm(estado == BUSCA ? memoria[PC] : RI, asm_str);
+
+                printf("\n[STEP] PC=%d | Estado: %s | %s\n", PC, nomes_estado[estado], asm_str);
                 ciclo(memoria, registradores, &PC);
-                incrementar_ciclos();
-                printf("Step executado. PC=%d | Estado=%d\n", PC, estado);
+                printf("[STEP] Proximo estado: %s\n", nomes_estado[estado]);
                 break;
             }
+            case 6:
+                printf("Funcao nao implementada.\n");
+                break;
             case 0:
                 printf("Saindo...\n");
                 break;
