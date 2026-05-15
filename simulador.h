@@ -21,18 +21,15 @@ typedef struct decode{
     int imm;
     int addr;
 } decode;
-typedef struct{
-    int RegDst; // decide se o destino é rd (1) ou rt (0)
-    int ULAOp; 
-    int MemRead;  
-    int MemWrite; 
-    int MemPReg; //verifica se dado escrito vem da memoria (1) ou da ULA (0)
-    int RegWrite;
-    int Branch;
-    int Jump;
+typedef struct sinaisControle {
+    int PCEsc, IouD, EscMem, IREsc;
+    int LerRegs, LerMem, MemParaReg, EscReg, RegDst;
+    int ULAFonteA, ULAFonteB, ULAControle, PCFonte, Branch;
 } sinaisControle;
 
 decode campos(int instrucao);
+sinaisControle gerarSinais(int estado, int opcode, int funct);
+int proximo_estado(int estado, int opcode);
 
 
 #endif
