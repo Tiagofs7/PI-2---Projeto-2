@@ -218,126 +218,33 @@ void carregarULAout(int resultado){
 int lerULAout(){
     return ULAout;
 }
-
-void ciclo(int memoria_instrucao[], int registradores[], int *PC) {
+void ciclo(int mem[], int regs[], int PC) {
     decode c = campos(RI);
+    sinaisControle s = gerarSinais(estado, c.opcode, c.funct);
+    int flag = 0;
 
-    switch (estado) {
-        case BUSCA: 
-            RI = memoria_instrucao[*PC]; 
-            printf("BUSCA: PC = %d, RI = %d\n", *PC, RI);
-            (*PC)++;
-            estado = DECODE;
-            break;
-        case DECODE: 
-            printf("DECODE: opcode: %d\n", c.opcode);
+    int ula_A = MUX2(PC, A, s.ULAFonteA);
+    int ula_B = MUX4(B, 1, c.imm, c.imm, s.ULAFonteB);
+    int res   = ULA(ula_A, ula_B, s.ULAControle, &flag);
+    int end   = MUX2(*PC, ULAout, s.IouD);
 
-            A = registradores[c.rs];
-            B = registradores[c.rt];
+    if (s.IREsc)              RI  = mem[end];
+    if (s.LerRegs)          { A   = regs[c.rs]; B = regs[c.rt]; }
+    if (s.LerMem && !s.IREsc) RDM = mem[end];
+    if (s.EscMem)             mem[end] = B;
 
-            if (c.opcode == 0 || c.opcode == 4) { // tipo R e ADDI (vai pra ULA) 
-                estado = EXEC;
-            } else if (c.opcode == 11 || c.opcode == 15) { // LW e SW (vai pra ULA calcular os endereços pra memoria)
-                estado = MEM_ADDR;
-            } else if (c.opcode == 8) { // BEQ (vai usar a ULA para comparar)
-                estado = BRANCH;
-            } else if (c.opcode == 2) { // JUMP
-                estado = JUMP;
-            }
-            break;
+    if (estado==BUSCA  estado==DECODE 
+ estado==EXEC || estado==MEM_ADDR)
+        ULAout = res;
 
-        case EXEC: { 
-            int flag;
-            int op2 = MUX2(B, c.imm, sinais.ULAFonteB);
-            int controle = controle_ULA(c.opcode, c.funct); 
-            
-            // O resultado matemático é gravado direto no REGISTRADOR ULAout
-            ULAout = ULA(A, op2, controle, &flag);
-            printf("[C3] Executa ULA: ULAout=%d\n", ULAout);
-            
-            estado = WRITE;
-            break;
-        }
+    if (s.EscReg)
+        regs[MUX2(c.rt, c.rd, s.RegDst)] = MUX2(ULAout, RDM, s.MemParaReg);
 
-        case MEM_ADDR: { // LW e SW
-            int flag;
-            
-            ULAout = ULA(A, c.imm, 0, &flag); // o 0 é p forçar a ula a somar
-            printf("[C3] Calc Endereco: ULAout=%d\n", ULAout);
-            
-            estado = MUX2(MEM_WRITE, MEM_READ, (c.opcode == 11));
-            break;
-        }
+    if (s.PCEsc)          PC = MUX4(res, ULAout, c.addr, 0, s.PCFonte);
+    if (s.Branch && flag)PC = ULAout;
 
-        case BRANCH: { // beq
-            int flag;
-            ULA(A, B, 2, &flag); 
-            
-            if (flag) *PC += c.imm;
-            printf("[C3] BEQ: PC=%d\n", *PC);
-            
-            estado = BUSCA;
-            break;
-        }
-
-        case JUMP:
-            *PC = c.addr;
-            printf("[C3] JUMP: PC=%d\n", *PC);
-            
-            estado = BUSCA;
-            break;
-
-        case WRITE: { 
-            int sinal_RegDst = (c.opcode == 0); // se for 0 a instrucao eh do tipo R.
-            int reg_destino = MUX2(c.rt, c.rd, sinal_RegDst); // isso serve pra decidir o registrador que vamos guardar o valor
-
-            int sinal_MemParaReg = 0;
-            int dado_escrita = MUX2(ULAout, RDM, sinal_MemParaReg); // isso serve pra decidiro valor que será guardado
-
-            registradores[reg_destino] = dado_escrita; // unindo o o registrador destino e o valor que será guardado
-            printf("[C4] Escrita Reg: $%d = %d\n", reg_destino, dado_escrita);
-
-            estado = BUSCA;
-            break;
-        }
-
-        case MEM_WRITE: { // CICLO 4 - EXCLUSIVO PARA SW
-            memoria_instrucao[ULAout] = B; 
-            printf("[C4] Escrita Mem: Mem[%d] = %d\n", ULAout, B); // vai escrever na memoria o que tiver no registrador B.
-
-            estado = BUSCA;
-            break;
-        }
-
-        case MEM_READ: { // CICLO 4 - EXCLUSIVO PARA LW (guarda no RDM)
-            RDM = memoria_instrucao[ULAout]; 
-            printf("[C4] Leitura Mem: RDM = %d (lido do endereco %d)\n", RDM, ULAout);
-
-            estado = MEM_WRITEBACK;
-            break;
-        }
-
-        case MEM_WRITEBACK: { // CICLO 5 - ESCRITA DO LW NA MEMORIA
-            int sinal_RegDst = 0; 
-            int reg_destino = MUX2(c.rt, c.rd, sinal_RegDst); // serve para o mux direcionar para o rt
-
-            int sinal_MemParaReg = 1;
-            int dado_escrita = MUX2(ULAout, RDM, sinal_MemParaReg); // serve para o mux direcionar para a saida do RDM
-
-            registradores[reg_destino] = dado_escrita;
-            printf("[C5] Writeback (LW): $%d = %d\n", reg_destino, dado_escrita);
-
-            estado = BUSCA;
-            break;
-        }
-
-        default:
-            printf("erro.\n");
-            estado = BUSCA;
-            break;
-    }
+    estado = proximo_estado(estado, c.opcode);
 }
-
 void step(int memoria_instrucao[], int registradores[], int *PC){
     ciclo(memoria_instrucao, registradores, PC);
 }
