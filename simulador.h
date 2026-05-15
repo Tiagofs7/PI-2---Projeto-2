@@ -39,6 +39,11 @@ sinaisControle gerarSinais(int estado, int opcode, int funct);
 int proximo_estado(int estado, int opcode);
 int leitura_arquivo_mem(int memoria[], char nome_arquivo[]);
 void instrucao_para_asm(int instrucao, char *buf);
+void imprimir_estado_cpu(int PC);
+void imprimir_registradores(int registradores[]);
+void imprimir_memoria_instrucao(int memoria[], int num_instr);
+void imprimir_memoria_dados(int memoria[], int inicio, int fim);
+
 
 extern int RI, A, B, ULAout, RDM, estado;
 
