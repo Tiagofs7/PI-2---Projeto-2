@@ -34,10 +34,10 @@ int MUX4(int entrada0, int entrada1, int entrada2, int entrada3, int controle);
 void ciclo(int memoria[], int registradores[], int *PC);
 void inicializar_registradores(int registradores[]);
 void run(int memoria[], int registradores[], int *PC, int num_instrucoes);
-extern int RI, A, B, ULAout, RDM, estado;
 decode campos(int instrucao);
 sinaisControle gerarSinais(int estado, int opcode, int funct);
 int proximo_estado(int estado, int opcode);
 
+extern int RI, A, B, ULAout, RDM, estado;
 
 #endif
