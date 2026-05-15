@@ -49,7 +49,7 @@ int main() {
                 break; 
             }
                 imprimir_memoria_instrucao(memoria, num_instrucoes);
-                imprimir_memoria_dados(memoria, num_instrucoes, 255);
+                imprimir_memoria_dados(memoria, 128, 255);
                 break;
             case 3:
                 imprimir_registradores(registradores);
@@ -70,7 +70,7 @@ int main() {
                     imprimir_registradores(registradores);
                 }
                 printf("--- Execucao concluida ---\n");
-                imprimir_memoria_dados(memoria, num_instrucoes, 255);
+                imprimir_memoria_dados(memoria, 128, 255);
                 break;
             }
             case 5: {
