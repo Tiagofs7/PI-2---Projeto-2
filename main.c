@@ -44,10 +44,15 @@ int main() {
                 break;
             }
             case 2:
-                printf("Funcao nao implementada.\n");
+                if (num_instrucoes == 0) { 
+                printf("Carregue um arquivo .mem primeiro.\n"); 
+                break; 
+            }
+                imprimir_memoria_instrucao(memoria, num_instrucoes);
+                imprimir_memoria_dados(memoria, num_instrucoes, 255);
                 break;
             case 3:
-                printf("Funcao nao implementada.\n");
+                imprimir_registradores(registradores);
                 break;
             case 4: {
                 if (num_instrucoes == 0) { printf("Carregue um arquivo .mem primeiro.\n"); break; }
@@ -61,8 +66,11 @@ int main() {
                     instrucao_para_asm(estado == BUSCA ? memoria[PC] : RI, asm_str);
                     printf("[%s] PC=%d | %s\n", nomes_estado[estado], PC, asm_str);
                     ciclo(memoria, registradores, &PC);
+                    imprimir_estado_cpu(PC);
+                    imprimir_registradores(registradores);
                 }
                 printf("--- Execucao concluida ---\n");
+                imprimir_memoria_dados(memoria, num_instrucoes, 255);
                 break;
             }
             case 5: {
@@ -79,6 +87,8 @@ int main() {
                 printf("\n[STEP] PC=%d | Estado: %s | %s\n", PC, nomes_estado[estado], asm_str);
                 ciclo(memoria, registradores, &PC);
                 printf("[STEP] Proximo estado: %s\n", nomes_estado[estado]);
+                imprimir_estado_cpu(PC);
+                imprimir_registradores(registradores);
                 break;
             }
             case 6:
